@@ -40,18 +40,17 @@ namespace crcxx {
       // Shift a value forward, i.e. left when MSB first, right when LSB first.
       static constexpr base_type shift_forward(base_type value, int shift)
       {
-        return forward ? value << shift : value >> shift;
+        return forward ? (shift >= 0 ? value << shift : value >> -shift)
+                       : (shift >= 0 ? value >> shift : value << -shift);
       }
 
       // Reverse bit order of value if cond == true, otherwise returns value.
-      static constexpr base_type reflect(base_type value, base_type result = 0, uint_fast8_t i = 0)
+      static constexpr base_type reflect_if(bool cond, base_type value, base_type result = 0, uint_fast8_t i = 0)
       {
-        return i < base_type_bits ? reflect(value >> 1, (result << 1) | (value & 1), i + 1) : result;
-      }
-
-      static constexpr base_type reflect_if(bool cond, base_type value)
-      {
-        return cond ? reflect(value) : value;
+        return cond ? (i < base_type_bits
+                        ? reflect_if(cond, value >> 1, (result << 1) | (value & 1), i + 1)
+                        : result)
+                    : value;
       }
 
       // Adjust poly and init for computation, according to direction and base_type_width.
@@ -69,19 +68,14 @@ namespace crcxx {
       // Shift the checksum and xors poly when appropriate.
       static constexpr base_type shift_checksum(base_type checksum, unsigned bits)
       {
-        return bits > 0
-          ? shift_checksum(shift_forward(checksum, 1) ^ (checksum & next_bit_mask ? poly : 0), bits - 1)
-          : checksum;
+        return bits > 0 ? shift_checksum(shift_forward(checksum, 1) ^ (checksum & next_bit_mask ? poly : 0), bits - 1)
+                        : checksum;
       }
 
       // Finalize the checksum
-      static constexpr base_type finalize(base_type rem)
+      static constexpr base_type finalize(base_type checksum)
       {
-        return Algorithm::xorout ^ (
-          forward
-            ? (refout ? reflect(rem) : rem >> (base_type_bits - Algorithm::width))
-            : (refout ? reflect(rem) >> (base_type_bits - Algorithm::width) : rem)
-        );
+        return Algorithm::xorout ^ reflect_if(refout, shift_forward(checksum, forward ^ refout ? -width_diff : 0));
       }
 
 
@@ -91,25 +85,26 @@ namespace crcxx {
       // possible) shifting/reflecting input bytes and the final result.
 
       static constexpr unsigned base_type_bits = sizeof(base_type) * CHAR_BIT;
+      static constexpr unsigned width_diff = base_type_bits - Algorithm::width;
 
       // When method == BIT_BY_BIT, forward is set in order to avoid reflecting input bytes, otherwise, forward is set
       // in order to avoid reflecting the final result.
-      static constexpr bool forward = Method != BIT_BY_BIT ? !Algorithm::refin : !Algorithm::refout;
+      static constexpr bool forward = Method == BIT_BY_BIT ? !Algorithm::refin : !Algorithm::refout;
 
       // refin and refout are adjusted according to the direction of the computation.
       static constexpr bool refin  = !forward ^ Algorithm::refin;
       static constexpr bool refout = !forward ^ Algorithm::refout;
-
-      // Items in the lookup table must be reflected when refin != refout to avoid reflecting the final result.
-      static constexpr bool ref_table = refin != refout;
-
-      static constexpr base_type next_bit_mask = forward ? base_type(1) << base_type_bits - 1 : 1;
 
       // poly and init are adjusted according to the direction and bit-order of the computation.
       static constexpr base_type poly = adjusted_param(Algorithm::poly);
       static constexpr base_type init = adjusted_param(Algorithm::init);
       // xorout is not adjusted because it is applied after the final result is reflected/shifted.
 
+      // And mask used to test next bit, most significant bit if forward, least significant bit otherwise.
+      static constexpr base_type next_bit_mask = forward ? base_type(1) << base_type_bits - 1 : 1;
+
+      // Items in the lookup table must be reflected when refin != refout to avoid reflecting the final result.
+      static constexpr bool ref_table = refin != refout;
 
     };
 

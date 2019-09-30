@@ -31,4 +31,6 @@ int main()
 
   std::cout << std::hex << crc::finalize(checksum) << ' ' << algo::check << '\n';
   std::cout << std::hex << crc2::finalize(checksum2) << ' ' << algo2::check << '\n';
+  std::cout << crc2::forward << ' ' << crc2::refout << '\n';
+  std::cout << std::hex << crc2::shift_forward(0x100000000, -32) << '\n';
 }
