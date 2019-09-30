@@ -47,13 +47,13 @@ namespace crcxx {
     using base_type = typename ::crcxx::detail::base_type<Width>::type;
 
     static constexpr unsigned  width    = Width;
-    static constexpr base_type poly     = static_cast<base_type>(Poly);
-    static constexpr base_type init     = static_cast<base_type>(Init);
+    static constexpr base_type poly     = base_type(Poly);
+    static constexpr base_type init     = base_type(Init);
     static constexpr bool      refin    = Refin;
     static constexpr bool      refout   = Refout;
-    static constexpr base_type xorout   = static_cast<base_type>(Xorout);
-    static constexpr base_type check    = static_cast<base_type>(Check);
-    static constexpr base_type residue  = static_cast<base_type>(Residue);
+    static constexpr base_type xorout   = base_type(Xorout);
+    static constexpr base_type check    = base_type(Check);
+    static constexpr base_type residue  = base_type(Residue);
 
     static_assert(width   >= 1,       "Width must be >= 1");
     static_assert(width   <= 64,      "Width must be <= 64");

@@ -40,17 +40,18 @@ namespace crcxx {
       // Shift a value forward, i.e. left when MSB first, right when LSB first.
       static constexpr base_type shift_forward(base_type value, int shift)
       {
-        return forward ? (shift >= 0 ? value << shift : value >> shift)
-                       : (shift >= 0 ? value >> shift : value << shift);
+        return forward ? value << shift : value >> shift;
       }
 
       // Reverse bit order of value if cond == true, otherwise returns value.
-      static constexpr base_type reflect_if(bool cond, base_type value, base_type result = 0, uint_fast8_t i = 0)
+      static constexpr base_type reflect(base_type value, base_type result = 0, uint_fast8_t i = 0)
       {
-        return cond ? (i < base_type_bits
-                        ? reflect_if(cond, value >> 1, (result << 1) | (value & 1), i + 1)
-                        : result)
-                    : value;
+        return i < base_type_bits ? reflect(value >> 1, (result << 1) | (value & 1), i + 1) : result;
+      }
+
+      static constexpr base_type reflect_if(bool cond, base_type value)
+      {
+        return cond ? reflect(value) : value;
       }
 
       // Adjust poly and init for computation, according to direction and base_type_width.
@@ -71,6 +72,16 @@ namespace crcxx {
         return bits > 0
           ? shift_checksum(shift_forward(checksum, 1) ^ (checksum & next_bit_mask ? poly : 0), bits - 1)
           : checksum;
+      }
+
+      // Finalize the checksum
+      static constexpr base_type finalize(base_type rem)
+      {
+        return Algorithm::xorout ^ (
+          forward
+            ? (refout ? reflect(rem) : rem >> (base_type_bits - Algorithm::width))
+            : (refout ? reflect(rem) >> (base_type_bits - Algorithm::width) : rem)
+        );
       }
 
 
