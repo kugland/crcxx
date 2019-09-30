@@ -1,15 +1,15 @@
 #!/usr/bin/perl
 
-# This script scraps data from CRC RevEng (by Greg Cook) catalogue of CRC algorithms
-# and creates a json file containing a list of CRC algorithm parameters.
+# This script scraps data from CRC RevEng (by Greg Cook) catalogue of CRC algorithms and creates
+# a json file containing a list of CRC algorithm parameters.
 
 use strict;
 use warnings 'all';
 
 use JSON::PP;
 
-use constant URL       => "http://reveng.sourceforge.net/crc-catalogue/all.htm";
-use constant JSON_FILE => "crc_catalogue.json";
+use constant URL       => 'http://reveng.sourceforge.net/crc-catalogue/all.htm';
+use constant JSON_FILE => 'crc_catalogue.json';
 
 my @algos;
 my %algo;

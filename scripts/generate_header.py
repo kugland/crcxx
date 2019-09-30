@@ -17,7 +17,7 @@ def cxx_identifier(algo, name):
 
     >>> cxx_identifier(32, 'CRC-32/CASTAGNOLI')
     'CRC32_CASTAGNOLI'
-    
+
     >>> cxx_identifier(32, 'PKZIP')
     'CRC32_PKZIP'
     """
@@ -94,7 +94,7 @@ algorithm_template = """
 
 alias_template = """
     ///
-    /// {alias} is an alias of {name}
+    /// {alias} is an alias for {name}
     ///
     using {alias_identifier} = {identifier};
 """

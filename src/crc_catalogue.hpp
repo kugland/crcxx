@@ -52,7 +52,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-4/ITU is an alias of CRC-4/G-704
+    /// CRC-4/ITU is an alias for CRC-4/G-704
     ///
     using CRC4_ITU = CRC4_G_704;
 
@@ -85,7 +85,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-5/EPC is an alias of CRC-5/EPC-C1G2
+    /// CRC-5/EPC is an alias for CRC-5/EPC-C1G2
     ///
     using CRC5_EPC = CRC5_EPC_C1G2;
 
@@ -104,7 +104,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-5/ITU is an alias of CRC-5/G-704
+    /// CRC-5/ITU is an alias for CRC-5/G-704
     ///
     using CRC5_ITU = CRC5_G_704;
 
@@ -179,7 +179,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-6/ITU is an alias of CRC-6/G-704
+    /// CRC-6/ITU is an alias for CRC-6/G-704
     ///
     using CRC6_ITU = CRC6_G_704;
 
@@ -352,7 +352,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-8/ITU is an alias of CRC-8/I-432-1
+    /// CRC-8/ITU is an alias for CRC-8/I-432-1
     ///
     using CRC8_ITU = CRC8_I_432_1;
 
@@ -399,12 +399,12 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-8/MAXIM is an alias of CRC-8/MAXIM-DOW
+    /// CRC-8/MAXIM is an alias for CRC-8/MAXIM-DOW
     ///
     using CRC8_MAXIM = CRC8_MAXIM_DOW;
 
     ///
-    /// DOW-CRC is an alias of CRC-8/MAXIM-DOW
+    /// DOW-CRC is an alias for CRC-8/MAXIM-DOW
     ///
     using CRC8_DOW_CRC = CRC8_MAXIM_DOW;
 
@@ -507,12 +507,12 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-8/AES is an alias of CRC-8/TECH-3250
+    /// CRC-8/AES is an alias for CRC-8/TECH-3250
     ///
     using CRC8_AES = CRC8_TECH_3250;
 
     ///
-    /// CRC-8/EBU is an alias of CRC-8/TECH-3250
+    /// CRC-8/EBU is an alias for CRC-8/TECH-3250
     ///
     using CRC8_EBU = CRC8_TECH_3250;
 
@@ -545,7 +545,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-10/I-610 is an alias of CRC-10/ATM
+    /// CRC-10/I-610 is an alias for CRC-10/ATM
     ///
     using CRC10_I_610 = CRC10_ATM;
 
@@ -634,7 +634,7 @@ namespace crcxx {
     >;
 
     ///
-    /// X-CRC-12 is an alias of CRC-12/DECT
+    /// X-CRC-12 is an alias for CRC-12/DECT
     ///
     using CRC12_X = CRC12_DECT;
 
@@ -667,7 +667,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-12/3GPP is an alias of CRC-12/UMTS
+    /// CRC-12/3GPP is an alias for CRC-12/UMTS
     ///
     using CRC12_3GPP = CRC12_UMTS;
 
@@ -756,12 +756,12 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-16/LHA is an alias of CRC-16/ARC
+    /// CRC-16/LHA is an alias for CRC-16/ARC
     ///
     using CRC16_LHA = CRC16_ARC;
 
     ///
-    /// CRC-IBM is an alias of CRC-16/ARC
+    /// CRC-IBM is an alias for CRC-16/ARC
     ///
     using CRC16_CRC_IBM = CRC16_ARC;
 
@@ -822,7 +822,7 @@ namespace crcxx {
     >;
 
     ///
-    /// R-CRC-16 is an alias of CRC-16/DECT-R
+    /// R-CRC-16 is an alias for CRC-16/DECT-R
     ///
     using CRC16_R = CRC16_DECT_R;
 
@@ -841,7 +841,7 @@ namespace crcxx {
     >;
 
     ///
-    /// X-CRC-16 is an alias of CRC-16/DECT-X
+    /// X-CRC-16 is an alias for CRC-16/DECT-X
     ///
     using CRC16_X = CRC16_DECT_X;
 
@@ -888,22 +888,22 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-16/DARC is an alias of CRC-16/GENIBUS
+    /// CRC-16/DARC is an alias for CRC-16/GENIBUS
     ///
     using CRC16_DARC = CRC16_GENIBUS;
 
     ///
-    /// CRC-16/EPC is an alias of CRC-16/GENIBUS
+    /// CRC-16/EPC is an alias for CRC-16/GENIBUS
     ///
     using CRC16_EPC = CRC16_GENIBUS;
 
     ///
-    /// CRC-16/EPC-C1G2 is an alias of CRC-16/GENIBUS
+    /// CRC-16/EPC-C1G2 is an alias for CRC-16/GENIBUS
     ///
     using CRC16_EPC_C1G2 = CRC16_GENIBUS;
 
     ///
-    /// CRC-16/I-CODE is an alias of CRC-16/GENIBUS
+    /// CRC-16/I-CODE is an alias for CRC-16/GENIBUS
     ///
     using CRC16_I_CODE = CRC16_GENIBUS;
 
@@ -936,12 +936,12 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-16/AUTOSAR is an alias of CRC-16/IBM-3740
+    /// CRC-16/AUTOSAR is an alias for CRC-16/IBM-3740
     ///
     using CRC16_AUTOSAR = CRC16_IBM_3740;
 
     ///
-    /// CRC-16/CCITT-FALSE is an alias of CRC-16/IBM-3740
+    /// CRC-16/CCITT-FALSE is an alias for CRC-16/IBM-3740
     ///
     using CRC16_CCITT_FALSE = CRC16_IBM_3740;
 
@@ -960,27 +960,27 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-16/ISO-HDLC is an alias of CRC-16/IBM-SDLC
+    /// CRC-16/ISO-HDLC is an alias for CRC-16/IBM-SDLC
     ///
     using CRC16_ISO_HDLC = CRC16_IBM_SDLC;
 
     ///
-    /// CRC-16/ISO-IEC-14443-3-B is an alias of CRC-16/IBM-SDLC
+    /// CRC-16/ISO-IEC-14443-3-B is an alias for CRC-16/IBM-SDLC
     ///
     using CRC16_ISO_IEC_14443_3_B = CRC16_IBM_SDLC;
 
     ///
-    /// CRC-16/X-25 is an alias of CRC-16/IBM-SDLC
+    /// CRC-16/X-25 is an alias for CRC-16/IBM-SDLC
     ///
     using CRC16_X_25 = CRC16_IBM_SDLC;
 
     ///
-    /// CRC-B is an alias of CRC-16/IBM-SDLC
+    /// CRC-B is an alias for CRC-16/IBM-SDLC
     ///
     using CRC16_CRC_B = CRC16_IBM_SDLC;
 
     ///
-    /// X-25 is an alias of CRC-16/IBM-SDLC
+    /// X-25 is an alias for CRC-16/IBM-SDLC
     ///
     using CRC16_X_25 = CRC16_IBM_SDLC;
 
@@ -999,7 +999,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-A is an alias of CRC-16/ISO-IEC-14443-3-A
+    /// CRC-A is an alias for CRC-16/ISO-IEC-14443-3-A
     ///
     using CRC16_CRC_A = CRC16_ISO_IEC_14443_3_A;
 
@@ -1018,22 +1018,22 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-16/CCITT is an alias of CRC-16/KERMIT
+    /// CRC-16/CCITT is an alias for CRC-16/KERMIT
     ///
     using CRC16_CCITT = CRC16_KERMIT;
 
     ///
-    /// CRC-16/CCITT-TRUE is an alias of CRC-16/KERMIT
+    /// CRC-16/CCITT-TRUE is an alias for CRC-16/KERMIT
     ///
     using CRC16_CCITT_TRUE = CRC16_KERMIT;
 
     ///
-    /// CRC-16/V-41-LSB is an alias of CRC-16/KERMIT
+    /// CRC-16/V-41-LSB is an alias for CRC-16/KERMIT
     ///
     using CRC16_V_41_LSB = CRC16_KERMIT;
 
     ///
-    /// CRC-CCITT is an alias of CRC-16/KERMIT
+    /// CRC-CCITT is an alias for CRC-16/KERMIT
     ///
     using CRC16_CRC_CCITT = CRC16_KERMIT;
 
@@ -1066,7 +1066,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-16/MAXIM is an alias of CRC-16/MAXIM-DOW
+    /// CRC-16/MAXIM is an alias for CRC-16/MAXIM-DOW
     ///
     using CRC16_MAXIM = CRC16_MAXIM_DOW;
 
@@ -1155,7 +1155,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-16/IEC-61158-2 is an alias of CRC-16/PROFIBUS
+    /// CRC-16/IEC-61158-2 is an alias for CRC-16/PROFIBUS
     ///
     using CRC16_IEC_61158_2 = CRC16_PROFIBUS;
 
@@ -1188,7 +1188,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-16/AUG-CCITT is an alias of CRC-16/SPI-FUJITSU
+    /// CRC-16/AUG-CCITT is an alias for CRC-16/SPI-FUJITSU
     ///
     using CRC16_AUG_CCITT = CRC16_SPI_FUJITSU;
 
@@ -1249,12 +1249,12 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-16/BUYPASS is an alias of CRC-16/UMTS
+    /// CRC-16/BUYPASS is an alias for CRC-16/UMTS
     ///
     using CRC16_BUYPASS = CRC16_UMTS;
 
     ///
-    /// CRC-16/VERIFONE is an alias of CRC-16/UMTS
+    /// CRC-16/VERIFONE is an alias for CRC-16/UMTS
     ///
     using CRC16_VERIFONE = CRC16_UMTS;
 
@@ -1287,22 +1287,22 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-16/ACORN is an alias of CRC-16/XMODEM
+    /// CRC-16/ACORN is an alias for CRC-16/XMODEM
     ///
     using CRC16_ACORN = CRC16_XMODEM;
 
     ///
-    /// CRC-16/LTE is an alias of CRC-16/XMODEM
+    /// CRC-16/LTE is an alias for CRC-16/XMODEM
     ///
     using CRC16_LTE = CRC16_XMODEM;
 
     ///
-    /// CRC-16/V-41-MSB is an alias of CRC-16/XMODEM
+    /// CRC-16/V-41-MSB is an alias for CRC-16/XMODEM
     ///
     using CRC16_V_41_MSB = CRC16_XMODEM;
 
     ///
-    /// ZMODEM is an alias of CRC-16/XMODEM
+    /// ZMODEM is an alias for CRC-16/XMODEM
     ///
     using CRC16_ZMODEM = CRC16_XMODEM;
 
@@ -1489,7 +1489,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-32Q is an alias of CRC-32/AIXM
+    /// CRC-32Q is an alias for CRC-32/AIXM
     ///
     using CRC32_Q = CRC32_AIXM;
 
@@ -1522,7 +1522,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-32D is an alias of CRC-32/BASE91-D
+    /// CRC-32D is an alias for CRC-32/BASE91-D
     ///
     using CRC32_D = CRC32_BASE91_D;
 
@@ -1541,17 +1541,17 @@ namespace crcxx {
     >;
 
     ///
-    /// B-CRC-32 is an alias of CRC-32/BZIP2
+    /// B-CRC-32 is an alias for CRC-32/BZIP2
     ///
     using CRC32_B = CRC32_BZIP2;
 
     ///
-    /// CRC-32/AAL5 is an alias of CRC-32/BZIP2
+    /// CRC-32/AAL5 is an alias for CRC-32/BZIP2
     ///
     using CRC32_AAL5 = CRC32_BZIP2;
 
     ///
-    /// CRC-32/DECT-B is an alias of CRC-32/BZIP2
+    /// CRC-32/DECT-B is an alias for CRC-32/BZIP2
     ///
     using CRC32_DECT_B = CRC32_BZIP2;
 
@@ -1584,7 +1584,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-32/POSIX is an alias of CRC-32/CKSUM
+    /// CRC-32/POSIX is an alias for CRC-32/CKSUM
     ///
     using CRC32_POSIX = CRC32_CKSUM;
 
@@ -1603,22 +1603,22 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-32/BASE91-C is an alias of CRC-32/ISCSI
+    /// CRC-32/BASE91-C is an alias for CRC-32/ISCSI
     ///
     using CRC32_BASE91_C = CRC32_ISCSI;
 
     ///
-    /// CRC-32/CASTAGNOLI is an alias of CRC-32/ISCSI
+    /// CRC-32/CASTAGNOLI is an alias for CRC-32/ISCSI
     ///
     using CRC32_CASTAGNOLI = CRC32_ISCSI;
 
     ///
-    /// CRC-32/INTERLAKEN is an alias of CRC-32/ISCSI
+    /// CRC-32/INTERLAKEN is an alias for CRC-32/ISCSI
     ///
     using CRC32_INTERLAKEN = CRC32_ISCSI;
 
     ///
-    /// CRC-32C is an alias of CRC-32/ISCSI
+    /// CRC-32C is an alias for CRC-32/ISCSI
     ///
     using CRC32_C = CRC32_ISCSI;
 
@@ -1637,22 +1637,22 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-32/ADCCP is an alias of CRC-32/ISO-HDLC
+    /// CRC-32/ADCCP is an alias for CRC-32/ISO-HDLC
     ///
     using CRC32_ADCCP = CRC32_ISO_HDLC;
 
     ///
-    /// CRC-32/V-42 is an alias of CRC-32/ISO-HDLC
+    /// CRC-32/V-42 is an alias for CRC-32/ISO-HDLC
     ///
     using CRC32_V_42 = CRC32_ISO_HDLC;
 
     ///
-    /// CRC-32/XZ is an alias of CRC-32/ISO-HDLC
+    /// CRC-32/XZ is an alias for CRC-32/ISO-HDLC
     ///
     using CRC32_XZ = CRC32_ISO_HDLC;
 
     ///
-    /// PKZIP is an alias of CRC-32/ISO-HDLC
+    /// PKZIP is an alias for CRC-32/ISO-HDLC
     ///
     using CRC32_PKZIP = CRC32_ISO_HDLC;
 
@@ -1769,7 +1769,7 @@ namespace crcxx {
     >;
 
     ///
-    /// CRC-64/GO-ECMA is an alias of CRC-64/XZ
+    /// CRC-64/GO-ECMA is an alias for CRC-64/XZ
     ///
     using CRC64_GO_ECMA = CRC64_XZ;
 
