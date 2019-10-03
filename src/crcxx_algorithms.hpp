@@ -1,9 +1,9 @@
 // THIS FILE WAS AUTOMATICALLY GENERATED, DO NOT EDIT.
 
-#ifndef CRCXX_CRC_CATALOGUE_HPP
-#define CRCXX_CRC_CATALOGUE_HPP
+#ifndef CRCXX_CRCXX_ALGORITHMS_HPP_
+#define CRCXX_CRCXX_ALGORITHMS_HPP_
 
-#include "crc_algorithm.hpp"
+#include "crcxx.hpp"
 
 namespace crcxx {
 
@@ -1777,4 +1777,4 @@ namespace crcxx {
 
 }
 
-#endif // CRCXX_CRC_CATALOGUE_HPP
+#endif // CRCXX_CRC_CATALOGUE_HPP_

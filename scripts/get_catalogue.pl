@@ -48,7 +48,6 @@ foreach (split /\n/, $html) {
         s#^Alias: ##g;                                      # Remove /^Alias: /
         my @aliases = split(/, /, $_);                      # Split aliases
         $algo{aliases} = \@aliases;                         # Add aliases to %algo
-
     }
 }
 push @algos, { %algo } if %algo;                            # Push last %algo to @algos

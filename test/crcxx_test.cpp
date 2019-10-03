@@ -1,36 +1,51 @@
 #include <iostream>
-#include "../src/crc_catalogue.hpp"
-#include "../src/detail/crc_primitives.hpp"
+#include "../src/crcxx.hpp"
+#include "../src/crcxx_algorithms.hpp"
 
-using algo = crcxx::algorithms::CRC32_PKZIP;
+template <typename Algorithm, crcxx::crc_method Method>
+struct check_crc_primitives
+{
+
+  using base_type = typename Algorithm::base_type;
+  using primitives = crcxx::detail::crc_primitives<Algorithm, Method>;
+
+  static constexpr base_type compute_check(base_type checksum = primitives::initial_value(), unsigned i = 0)
+  {
+    return i < 9
+      ? compute_check(primitives::update_checksum(checksum, "123456789"[i], 8), i + 1)
+      : primitives::finalize(checksum);
+  }
+
+};
+
+template <typename Algorithm>
+struct check_crc_primitives<Algorithm, crcxx::USE_TABLE>
+{
+
+  using base_type = typename Algorithm::base_type;
+  using primitives = crcxx::detail::crc_primitives<Algorithm, crcxx::USE_TABLE>;
+
+  static constexpr base_type table_func(uint_least8_t index)
+  {
+    return primitives::compute_lookup_table_item(index);
+  }
+
+  static constexpr base_type compute_check(base_type checksum = primitives::initial_value(), unsigned i = 0)
+  {
+    return i < 9
+      ? compute_check(primitives::update_checksum_table(checksum, table_func, "123456789"[i]), i + 1)
+      : primitives::finalize(checksum);
+  }
+
+};
+
+using algo = crcxx::algorithms::CRC64_ECMA_182;
 using algo2 = crcxx::algorithms::CRC32_BZIP2;
-using crc = crcxx::detail::crc_primitives<algo, crcxx::detail::BIT_BY_BIT>;
-using crc2 = crcxx::detail::crc_primitives<algo2, crcxx::detail::BIT_BY_BIT>;
-using type = typename algo::base_type;
-using type2 = typename algo2::base_type;
-
+using check = check_crc_primitives<algo, crcxx::USE_TABLE>;
+using check2 = check_crc_primitives<algo2, crcxx::USE_TABLE>;
 
 int main()
 {
-  /*for (int i = 0; i < 256; i++) {
-    std::cout << std::hex << crc::shift_checksum(crc::adjusted_input(i), 8) << std::endl;
-    std::cout << std::hex << crc2::shift_checksum(crc2::adjusted_input(i), 8) << std::endl;
-  }
-  std::cout << std::hex << crc::poly << std::endl;
-  std::cout << std::hex << crc::next_bit_mask << std::endl;
-  std::cout << std::hex << crc2::poly << std::endl;
-  std::cout << std::hex << crc2::next_bit_mask << std::endl;*/
-
-  type checksum = crc::init;
-  type2 checksum2 = crc2::init;
-
-  for (int i = 0; i < 9; i++) {
-    checksum = crc::shift_checksum(checksum ^ crc::adjusted_input(uint8_t("123456789"[i])), 8);
-    checksum2 = crc2::shift_checksum(checksum2 ^ crc2::adjusted_input(uint8_t("123456789"[i])), 8);
-  }
-
-  std::cout << std::hex << crc::finalize(checksum) << ' ' << algo::check << '\n';
-  std::cout << std::hex << crc2::finalize(checksum2) << ' ' << algo2::check << '\n';
-  std::cout << crc2::forward << ' ' << crc2::refout << '\n';
-  std::cout << std::hex << crc2::shift_forward(0x100000000, -32) << '\n';
+  std::cout << std::hex << check::compute_check() << ' ' << algo::check << '\n';
+  std::cout << std::hex << check2::compute_check() << ' ' << algo2::check << '\n';
 }

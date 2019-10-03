@@ -5,6 +5,7 @@
 import re
 import math
 import json
+import sys
 
 
 numeric_params = ['poly', 'init', 'xorout', 'check', 'residue']
@@ -60,8 +61,8 @@ def load_algos():
 file_template = """
 // THIS FILE WAS AUTOMATICALLY GENERATED, DO NOT EDIT.
 
-#ifndef CRCXX_CRC_CATALOGUE_HPP
-#define CRCXX_CRC_CATALOGUE_HPP
+#ifndef CRCXX_CRC_CATALOGUE_HPP_
+#define CRCXX_CRC_CATALOGUE_HPP_
 
 #include "crc_algorithm.hpp"
 
@@ -73,7 +74,7 @@ namespace crcxx {{
 
 }}
 
-#endif // CRCXX_CRC_CATALOGUE_HPP
+#endif // CRCXX_CRC_CATALOGUE_HPP_
 """.strip("\n")
 
 algorithm_template = """
@@ -100,7 +101,7 @@ alias_template = """
 """
 
 
-def print_algos(algos):
+def format_algos(algos):
     result = []
     for algo in algos:
         algo['refin']   = algo['refin']  and 'true' or 'false'
@@ -111,16 +112,22 @@ def print_algos(algos):
         if 'aliases' in algo:
             for alias in sorted(algo['aliases']):
                 alias_identifier = cxx_identifier(algo, alias)
+                if alias_identifier == algo['identifier']:
+                    continue
                 if re.match(r'^CRC\d+$', alias_identifier):
+                    print("Unspecific identifier discarded: {0}, alias for {1}"
+                        .format(alias_identifier, algo['identifier']), file=sys.stderr)
                     continue
                 if alias_identifier in used_identifiers:
+                    print("Duplicate identifier discarded: {0}, alias for {1}"
+                        .format(alias_identifier, algo['identifier']), file=sys.stderr)
                     continue
                 result.append(alias_template.format(
                     alias=alias,
                     alias_identifier=alias_identifier,
                     **algo))
                 used_identifiers.add(alias)
-    return "".join(result)
+    return file_template.format(algorithms="".join(result))
 
 
-print(file_template.format(algorithms=print_algos(load_algos())))
+print(format_algos(load_algos()))
