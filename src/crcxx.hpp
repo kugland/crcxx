@@ -149,8 +149,6 @@ namespace crcxx {
     {
 
       using base_type = typename Algorithm::base_type;
-      static constexpr unsigned table_bits = Method == USE_SMALL_TABLE ? 4 : 8;
-      using table_type = base_type(&)(uint_least8_t);
 
 
       ///////////////////////////////////////// Primitives for CRC computation ////////////////////////////////////////
@@ -170,7 +168,8 @@ namespace crcxx {
         return shift_checksum(checksum ^ adjusted_input(input, bits), bits);
       }
 
-      static constexpr base_type update_checksum_table(base_type checksum, table_type table, uint_least8_t input)
+      template <typename TableType>
+      static constexpr base_type update_checksum_table(base_type checksum, TableType table, uint_least8_t input)
       {
         return shift_forward(checksum, table_bits) ^ table(adjusted_table_index(checksum, input));
       }
@@ -178,7 +177,6 @@ namespace crcxx {
       // Computes an item of the lookup table.
       static constexpr base_type compute_lookup_table_item(base_type index)
       {
-        // Items in the lookup table must be reflected when refin != refout to avoid reflecting the final result.
         return reflect_if(refin != refout, shift_checksum(adjusted_input(index, table_bits), table_bits));
       }
 
@@ -213,24 +211,24 @@ namespace crcxx {
       // Adjust poly and init for computation, according to direction and base_type_width.
       static constexpr base_type adjusted_param(base_type value)
       {
-        return shift_forward(reflect_if(!msb_first, value), base_type_bits - Algorithm::width);
+        return reflect_if(!msb_first, value << base_type_bits - Algorithm::width);
       }
 
       // Adjust input for computation, according to direction and base_type_width.
       template <typename InputType>
-      static constexpr base_type adjusted_input(InputType value, unsigned bits)
+      static constexpr base_type adjusted_input(InputType value, uint_fast8_t bits)
       {
         return shift_forward(reflect_if(refin, value, bits), msb_first ? base_type_bits - bits : 0);
       }
 
       // Adjust input for computation, according to direction and base_type_width.
-      static constexpr base_type adjusted_table_index(base_type checksum, uint8_t input)
+      static constexpr base_type adjusted_table_index(base_type checksum, uint_least8_t input)
       {
         return (shift_forward(checksum, msb_first ? -base_type_bits + table_bits : 0) ^ input) & table_mask;
       }
 
       // Shift the checksum and xors poly when appropriate.
-      static constexpr base_type shift_checksum(base_type checksum, unsigned bits)
+      static constexpr base_type shift_checksum(base_type checksum, uint_fast8_t bits)
       {
         return bits > 0 ? shift_checksum(shift_forward(checksum, 1) ^ (checksum & next_bit_mask ? poly : 0), bits - 1)
                         : checksum;
@@ -239,14 +237,10 @@ namespace crcxx {
 
       ///////////////////////////////////////////// Computation parameters ////////////////////////////////////////////
 
-      // Algorithm parameters are statically adjusted in order to optimize the computation, thence avoiding (as far as
-      // possible) shifting/reflecting input bytes and the final result.
-
       static constexpr unsigned base_type_bits = sizeof(base_type) * CHAR_BIT;
       static constexpr unsigned width_diff = base_type_bits - Algorithm::width;
 
-      // msb_first defines the direction of computation. It is selected to eliminate input reflection in the case of
-      // bit by bit computation, and to eliminate final result reflection when using a lookup table.
+      // msb_first defines the direction of computation. It is selected to eliminate input reflection.
       static constexpr bool msb_first = Method == BIT_BY_BIT ? !Algorithm::refin : !Algorithm::refout;
 
       // refin and refout are adjusted according to the direction of the computation.
@@ -261,7 +255,8 @@ namespace crcxx {
       // And mask used to test next bit, most significant bit if msb_first, least significant bit otherwise.
       static constexpr base_type next_bit_mask = msb_first ? base_type(1) << (base_type_bits - 1) : 1;
 
-      static constexpr size_t table_mask = (size_t(1) << table_bits) - 1;
+      static constexpr unsigned table_bits = Method == USE_SMALL_TABLE ? 4 : 8;
+      static constexpr size_t table_mask = Method == USE_SMALL_TABLE ? 15 : 255;
 
     };
 
