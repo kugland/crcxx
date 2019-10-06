@@ -115,7 +115,7 @@ namespace crcxx {
   >
   struct crc_algorithm
   {
-    using base_type = typename ::crcxx::detail::select_base_type<Width>::type;
+    using base_type = typename detail::select_base_type<Width>::type;
 
     static constexpr unsigned  width    = Width;
     static constexpr base_type poly     = base_type(Poly);
