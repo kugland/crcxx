@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# This script takes crc_catalogue.json and transforms it into crc_catalogue.hpp.
+# This script takes crc_catalogue.json and transforms it into crcxx_algorithms.hpp.
 
 import re
 import math
