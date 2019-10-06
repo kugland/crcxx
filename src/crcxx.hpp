@@ -33,12 +33,16 @@
 #ifndef CRCXX_USE_STL
 #if !defined(__AVR__)
 #define CRCXX_USE_STL 1
+
+#if __cplusplus >= 201402
+#include <utility>
+#define CRCXX_USE_STL_INDEX_SEQUENCE 1
+#endif
+
 #else
 #define CRCXX_USE_STL 0
 #endif
 #endif
-
-
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -67,8 +71,14 @@ namespace crcxx {
 
   namespace detail {
 
-    template <unsigned Width> struct select_base_type;
-    template <typename Algorithm, ::crcxx::crc_method Method> class crc_primitives;
+    template <unsigned Width>
+    struct select_base_type;
+
+    template <typename Algorithm, ::crcxx::crc_method Method>
+    class crc_primitives;
+
+    template <typename Algorithm, ::crcxx::crc_method Method>
+    struct crc_lookup_table;
 
   } // namespace crcxx
 
@@ -129,13 +139,12 @@ namespace crcxx {
 
 
   template <typename Algorithm, crc_method Method>
-  class base_crc
+  class crc
   {
 
-  protected:
-
-    using base_type = typename Algorithm::base_type;
-    using primitives = ::crcxx::detail::crc_primitives<Algorithm, Method>;
+    using base_type    = typename Algorithm::base_type;
+    using primitives   = ::crcxx::detail::crc_primitives<Algorithm, Method>;
+    using lookup_table = ::crcxx::detail::crc_lookup_table<Algorithm, Method>;
 
     base_type checksum = primitives::init;
 
@@ -143,21 +152,18 @@ namespace crcxx {
 
     void update(char data)
     {
-      checksum = primitives::shift_checksum(checksum ^ primitives::adjusted_input(data, 8), 8);
+      checksum ^= primitives::adjusted_input(data, 8);
+
+      if (Method == BIT_BY_BIT) {
+        checksum = primitives::shift_checksum(checksum, 8);
+      } else {
+        const static lookup_table table;
+        uint_fast8_t repeat = Method == USE_TABLE ? 1 : 2;
+
+        while (repeat--)
+          checksum = primitives::shift_forward(checksum, primitives::table_bits) ^ table[checksum];
+      }
     }
-
-  };
-
-  template <typename Algorithm, crc_method Method = BIT_BY_BIT>
-  class crc: public base_crc<Algorithm, Method>
-  {
-
-    using base_type = typename base_crc<Algorithm, Method>::base_type;
-    using primitives = typename base_crc<Algorithm, Method>::primitives;
-    using base_crc<Algorithm, Method>::update;
-    using base_crc<Algorithm, Method>::checksum;
-
-  public:
 
     void update(size_t size, const char* data)
     {
@@ -215,34 +221,8 @@ namespace crcxx {
 
     public:
 
-      // Updates the checksum with new data bit by bit.
-      template <typename InputType>
-      static constexpr base_type update_checksum(base_type checksum, InputType input, unsigned bits)
-      {
-        return shift_checksum(checksum ^ adjusted_input(input, bits), bits);
-      }
-
-      // Updates the checksum with new data using a table.
-      template <typename TableType>
-      static constexpr base_type update_checksum_table(base_type checksum, TableType table, uint_least8_t input,
-                                                       unsigned index = Method == USE_SMALL_TABLE ? 2 : 1)
-      {
-        checksum = shift_forward(checksum, table_bits) ^ table(adjusted_table_index(checksum, input));
-        checksum = shift_forward(checksum, table_bits) ^ table(adjusted_table_index(checksum, shift_forward(input, table_bits)));
-
-        return checksum;
-        /*return index == 0
-          ? checksum
-          : update_checksum_table(
-              shift_forward(checksum, table_bits) ^ table(adjusted_table_index(checksum, input)),
-              table,
-              shift_forward(input, table_bits),
-              index - 1
-            );*/
-      }
-
       // Computes an item of the lookup table.
-      static constexpr base_type compute_lookup_table_item(base_type index)
+      static constexpr base_type compute_lookup_table(base_type index)
       {
         return shift_checksum(adjusted_input(index, table_bits), table_bits);
       }
@@ -286,13 +266,7 @@ namespace crcxx {
         return shift_forward(reflect_if(refin, value, bits), msb_first ? base_type_bits - bits : 0);
       }
 
-      // Adjust input for computation, according to direction and base_type_width.
-      static constexpr base_type adjusted_table_index(base_type checksum, uint_least8_t input)
-      {
-        return (shift_forward(checksum, msb_first ? -base_type_bits + table_bits : 0) ^ input) & table_mask;
-      }
-
-      // Shift the checksum and xors poly when appropriate.
+       // Shift the checksum and xors poly when appropriate.
       static constexpr base_type shift_checksum(base_type checksum, uint_fast8_t bits)
       {
         return bits > 0 ? shift_checksum(shift_forward(checksum, 1) ^ (checksum & next_bit_mask ? poly : 0), bits - 1)
@@ -323,6 +297,61 @@ namespace crcxx {
       static constexpr unsigned table_bits = Method == USE_SMALL_TABLE ?  4 :   8;
       static constexpr uint8_t  table_mask = Method == USE_SMALL_TABLE ? 15 : 255;
 
+    };
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////// LOOKUP TABLES //////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#if CRCXX_USE_STL_INDEX_SEQUENCE
+    using ::std::index_sequence;
+    using ::std::make_index_sequence;
+#else
+    // Backport of C++14 std::index_sequence.
+    template <size_t... Is> struct index_sequence { static constexpr size_t size = sizeof...(Is); };
+    template <size_t N, size_t... Is> struct make_index_sequence: make_index_sequence<N - 1, N - 1, Is...> { };
+    template <size_t... Is> struct make_index_sequence<0, Is...>: index_sequence<Is...> { };
+#endif
+
+    template <typename Algorithm, ::crcxx::crc_method Method>
+    struct crc_lookup_table
+    {
+      using base_type   = typename Algorithm::base_type;
+      using primitives  = crc_primitives<Algorithm, Method>;
+
+      constexpr static unsigned bits  = Method == USE_SMALL_TABLE ? 4 : 8;
+      constexpr static unsigned size  = 1u << bits;
+      constexpr static unsigned mask  = size - 1;
+      constexpr static unsigned shift = primitives::msb_first ? primitives::base_type_bits - bits : 0;
+
+      struct internal_array
+      { base_type values[size]; };
+
+      template <size_t... Is>
+      static constexpr internal_array make_lookup_table(index_sequence<Is...>)
+      { return {{ primitives::compute_lookup_table(Is)... }}; }
+
+      static constexpr internal_array make_lookup_table()
+      { return make_lookup_table(make_index_sequence<size>()); }
+
+      base_type operator[](base_type index) const
+      {
+        const static internal_array table = make_lookup_table();
+        return table.values[(index >> shift) & mask];
+      }
+    };
+
+    template <typename Algorithm>
+    struct crc_lookup_table<Algorithm, BIT_BY_BIT>
+    {
+      using base_type = typename Algorithm::base_type;
+      constexpr static unsigned bits = 0;
+
+      base_type operator[](base_type index) const
+      {
+        return 0;
+      }
     };
 
   } // namespace detail
