@@ -1,6 +1,6 @@
 //#include <stdlib.h>
-//#include <iostream>
-//#include <iomanip>
+#include <iostream>
+#include <iomanip>
 
 #include "../src/crcxx.hpp"
 #include "../src/crcxx_algorithms.hpp"
@@ -58,19 +58,11 @@ uint32_t crc32(const char* ptr, size_t size)
   return crc.finalize();
 }
 
-/*int main()
+int main()
 {
-
   std::cout
     << std::hex
     << crc32("123456789", 9)
     << ' '
     << algo::check << '\n';
-  //std::cout << std::hex << check2::compute_check() << ' ' << algo2::check << '\n';
-  using crc = crcxx::detail::crc_primitives<algo, crcxx::USE_TABLE>;
-  for (int i = 0; i <= 16; i++) {
-    std::cout << "0x" << std::hex << i << ": 0x" << std::hex << std::setfill('0') << std::setw(4) << crc::compute_lookup_table_item(i) << ",\n";
-  }
-  std::cout << "msb_first: " << crc::msb_first << '\n';
 }
-*/

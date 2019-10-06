@@ -64,7 +64,7 @@ file_template = """
 #ifndef CRCXX_CRC_CATALOGUE_HPP_
 #define CRCXX_CRC_CATALOGUE_HPP_
 
-#include "crc_algorithm.hpp"
+#include "crcxx.hpp"
 
 namespace crcxx {{
 

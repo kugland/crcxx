@@ -16,31 +16,49 @@
 #ifndef CRCXX_CRCXX_HPP_
 #define CRCXX_CRCXX_HPP_
 
-#include <stdint.h>
-#include <limits.h>
-#include <stdlib.h>
-
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////// CONFIGURATION MACROS ////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+// AVR library does not include <climits>, <cstdint> etc variants, but only <limits.h>, <stdint.h> etc.
+#ifndef CRCXX_USE_STD_CPP_HEADERS
+#if !defined(__AVR__)
+#define CRCXX_USE_STD_CPP_HEADERS 1
+#else
+#define CRCXX_USE_STD_CPP_HEADERS 0
+#endif
+#endif
+
+#if CRCXX_USE_STD_CPP_HEADERS
+#include <climits>
+#include <cstdint>
+#include <cstdlib>
+#define CRCXX_STD_NS ::std
+#else
+#include <limits.h>
+#include <stdint.h>
+#include <stdlib.h>
+#define CRCXX_STD_NS
+#endif
+
+
 // When CRCXX_USE_STL is enabled, crcxx includes functions for dealing with STL containers std::string, std::array,
-// std::vector and (if std >= C++17) std::string_view.
+// std::vector and (if std >= C++17) std::string_view, and also disables the std::index_sequence backport.
 //
-// For now, it is enabled by default except when compiling for AVR architecture.
+// For now, it is enabled by default except when compiling for AVR architecture, whose default library does not
+// include the standard template library.
 #ifndef CRCXX_USE_STL
 #if !defined(__AVR__)
 #define CRCXX_USE_STL 1
+#else
+#define CRCXX_USE_STL 0
+#endif
+#endif
 
 #if __cplusplus >= 201402
 #include <utility>
 #define CRCXX_USE_STL_INDEX_SEQUENCE 1
-#endif
-
-#else
-#define CRCXX_USE_STL 0
 #endif
 #endif
 
@@ -104,14 +122,14 @@ namespace crcxx {
   /// \tparam Check   value of CRC("123456789").
   /// \tparam Residue value of CRC(str + CRC(str)).
   template <
-    unsigned  Width,
-    uintmax_t Poly,
-    uintmax_t Init,
-    bool      Refin,
-    bool      Refout,
-    uintmax_t Xorout,
-    uintmax_t Check,
-    uintmax_t Residue
+    unsigned                Width,
+    CRCXX_STD_NS::uintmax_t Poly,
+    CRCXX_STD_NS::uintmax_t Init,
+    bool                    Refin,
+    bool                    Refout,
+    CRCXX_STD_NS::uintmax_t Xorout,
+    CRCXX_STD_NS::uintmax_t Check,
+    CRCXX_STD_NS::uintmax_t Residue
   >
   struct crc_algorithm
   {
@@ -158,14 +176,15 @@ namespace crcxx {
         checksum = primitives::shift_checksum(checksum, 8);
       } else {
         const static lookup_table table;
-        uint_fast8_t repeat = Method == USE_TABLE ? 1 : 2;
+        int repeat = Method == USE_TABLE ? 1 : 2;
 
-        while (repeat--)
+        while (repeat--) {
           checksum = primitives::shift_forward(checksum, lookup_table::table_bits) ^ table[checksum];
+        }
       }
     }
 
-    void update(size_t size, const char* data)
+    void update(CRCXX_STD_NS::size_t size, const char* data)
     {
       while (size--) {
         update(*data++);
@@ -198,10 +217,10 @@ namespace crcxx {
       using type = typename select_base_type<Width + 1>::type;
     };
 
-    template <> struct select_base_type<8>  { using type = uint_least8_t;  };
-    template <> struct select_base_type<16> { using type = uint_least16_t; };
-    template <> struct select_base_type<32> { using type = uint_least32_t; };
-    template <> struct select_base_type<64> { using type = uint_least64_t; };
+    template <> struct select_base_type<8>  { using type = CRCXX_STD_NS::uint_least8_t;  };
+    template <> struct select_base_type<16> { using type = CRCXX_STD_NS::uint_least16_t; };
+    template <> struct select_base_type<32> { using type = CRCXX_STD_NS::uint_least32_t; };
+    template <> struct select_base_type<64> { using type = CRCXX_STD_NS::uint_least64_t; };
 
 
 
@@ -294,9 +313,14 @@ namespace crcxx {
     using ::std::index_sequence;
     using ::std::make_index_sequence;
 #else
-    template <size_t... Is> struct index_sequence { static constexpr size_t size = sizeof...(Is); };
-    template <size_t N, size_t... Is> struct make_index_sequence: make_index_sequence<N - 1, N - 1, Is...> { };
-    template <size_t... Is> struct make_index_sequence<0, Is...>: index_sequence<Is...> { };
+    template <CRCXX_STD_NS::size_t... Is>
+    struct index_sequence { static constexpr CRCXX_STD_NS::size_t size = sizeof...(Is); };
+
+    template <CRCXX_STD_NS::size_t N, CRCXX_STD_NS::size_t... Is>
+    struct make_index_sequence: make_index_sequence<N - 1, N - 1, Is...> { };
+
+    template <CRCXX_STD_NS::size_t... Is>
+    struct make_index_sequence<0, Is...>: index_sequence<Is...> { };
 #endif
 
 
@@ -317,7 +341,7 @@ namespace crcxx {
         base_type values[table_size];
       };
 
-      template <size_t... Is>
+      template <CRCXX_STD_NS::size_t... Is>
       static constexpr internal_array make_lookup_table(index_sequence<Is...>)
       {
         return {{
