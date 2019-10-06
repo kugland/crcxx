@@ -128,13 +128,13 @@ namespace crcxx {
 
     static_assert(width   >= 1,       "Width must be >= 1");
     static_assert(width   <= 64,      "Width must be <= 64");
-    static_assert(poly    == Poly,    "Poly doesn't fit the given Width");
+    static_assert(poly    == Poly,    "Poly doesn't fit");
     static_assert(poly    != 0,       "Poly can't be zero");
-    static_assert(poly    %  2,       "Poly can't be an even number");
-    static_assert(init    == Init,    "Init doesn't fit the given Width");
-    static_assert(xorout  == Xorout,  "Xorout doesn't fit the given Width");
-    static_assert(check   == Check,   "Check doesn't fit the given Width");
-    static_assert(residue == Residue, "Residue doesn't fit the given Width");
+    static_assert(poly    %  2,       "Poly can't be even");
+    static_assert(init    == Init,    "Init doesn't fit");
+    static_assert(xorout  == Xorout,  "Xorout doesn't fit");
+    static_assert(check   == Check,   "Check doesn't fit");
+    static_assert(residue == Residue, "Residue doesn't fit");
   };
 
 
