@@ -39,6 +39,25 @@
 #endif
 
 
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////// CONSTANTS //////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+namespace crcxx {
+
+  enum crc_method {
+    BIT_BY_BIT,
+    USE_TABLE,
+    USE_SMALL_TABLE
+  };
+
+} // namespace crcxx
+
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////// FORWARD DECLARATIONS ////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -49,6 +68,7 @@ namespace crcxx {
   namespace detail {
 
     template <unsigned Width> struct select_base_type;
+    template <typename Algorithm, ::crcxx::crc_method Method> class crc_primitives;
 
   } // namespace crcxx
 
@@ -107,10 +127,50 @@ namespace crcxx {
     static_assert(residue == Residue, "Residue doesn't fit the given Width");
   };
 
-  enum crc_method {
-    BIT_BY_BIT,
-    USE_TABLE,
-    USE_SMALL_TABLE
+
+  template <typename Algorithm, crc_method Method>
+  class base_crc
+  {
+
+  protected:
+
+    using base_type = typename Algorithm::base_type;
+    using primitives = ::crcxx::detail::crc_primitives<Algorithm, Method>;
+
+    base_type checksum = primitives::init;
+
+  public:
+
+    void update(char data)
+    {
+      checksum = primitives::shift_checksum(checksum ^ primitives::adjusted_input(data, 8), 8);
+    }
+
+  };
+
+  template <typename Algorithm, crc_method Method = BIT_BY_BIT>
+  class crc: public base_crc<Algorithm, Method>
+  {
+
+    using base_type = typename base_crc<Algorithm, Method>::base_type;
+    using primitives = typename base_crc<Algorithm, Method>::primitives;
+    using base_crc<Algorithm, Method>::update;
+    using base_crc<Algorithm, Method>::checksum;
+
+  public:
+
+    void update(size_t size, const char* data)
+    {
+      while (size--) {
+        update(*data++);
+      }
+    }
+
+    base_type finalize() const
+    {
+      return primitives::finalize(checksum);
+    }
+
   };
 
 
@@ -155,12 +215,6 @@ namespace crcxx {
 
     public:
 
-      // Initial value
-      static constexpr base_type initial_value()
-      {
-        return init;
-      }
-
       // Updates the checksum with new data bit by bit.
       template <typename InputType>
       static constexpr base_type update_checksum(base_type checksum, InputType input, unsigned bits)
@@ -173,14 +227,18 @@ namespace crcxx {
       static constexpr base_type update_checksum_table(base_type checksum, TableType table, uint_least8_t input,
                                                        unsigned index = Method == USE_SMALL_TABLE ? 2 : 1)
       {
-        return index == 0
+        checksum = shift_forward(checksum, table_bits) ^ table(adjusted_table_index(checksum, input));
+        checksum = shift_forward(checksum, table_bits) ^ table(adjusted_table_index(checksum, shift_forward(input, table_bits)));
+
+        return checksum;
+        /*return index == 0
           ? checksum
           : update_checksum_table(
               shift_forward(checksum, table_bits) ^ table(adjusted_table_index(checksum, input)),
               table,
               shift_forward(input, table_bits),
               index - 1
-            );
+            );*/
       }
 
       // Computes an item of the lookup table.
@@ -197,8 +255,6 @@ namespace crcxx {
 
 
       ///////////////////////////////////////////////// Helper methods ////////////////////////////////////////////////
-
-    private:
 
       // Shift a value forward, i.e. left when MSB first, right when LSB first.
       static constexpr base_type shift_forward(base_type value, int shift)
