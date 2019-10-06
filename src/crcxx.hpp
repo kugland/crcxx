@@ -161,23 +161,32 @@ namespace crcxx {
         return init;
       }
 
-      // Updates the checksum with new data.
+      // Updates the checksum with new data bit by bit.
       template <typename InputType>
       static constexpr base_type update_checksum(base_type checksum, InputType input, unsigned bits)
       {
         return shift_checksum(checksum ^ adjusted_input(input, bits), bits);
       }
 
+      // Updates the checksum with new data using a table.
       template <typename TableType>
-      static constexpr base_type update_checksum_table(base_type checksum, TableType table, uint_least8_t input)
+      static constexpr base_type update_checksum_table(base_type checksum, TableType table, uint_least8_t input,
+                                                       unsigned index = Method == USE_SMALL_TABLE ? 2 : 1)
       {
-        return shift_forward(checksum, table_bits) ^ table(adjusted_table_index(checksum, input));
+        return index == 0
+          ? checksum
+          : update_checksum_table(
+              shift_forward(checksum, table_bits) ^ table(adjusted_table_index(checksum, input)),
+              table,
+              shift_forward(input, table_bits),
+              index - 1
+            );
       }
 
       // Computes an item of the lookup table.
       static constexpr base_type compute_lookup_table_item(base_type index)
       {
-        return reflect_if(refin != refout, shift_checksum(adjusted_input(index, table_bits), table_bits));
+        return shift_checksum(adjusted_input(index, table_bits), table_bits);
       }
 
       // Finalize the checksum
@@ -198,12 +207,12 @@ namespace crcxx {
                          : (shift >= 0 ? value >> shift : value << -shift);
       }
 
-      // Reverse bit order of value if cond == true, otherwise returns value.
-      static constexpr base_type reflect_if(bool cond, base_type value, unsigned bits = base_type_bits,
-                                            base_type result = 0, uint_fast8_t i = 0)
+      // Returns the first n least significant bits of value in reverse order if cond == true, otherwise returns value.
+      static constexpr base_type reflect_if(bool cond, base_type value, uint_fast8_t bits = base_type_bits,
+                                            base_type result = 0)
       {
-        return cond ? (i < bits
-                        ? reflect_if(cond, value >> 1, bits, (result << 1) | (value & 1), i + 1)
+        return cond ? (bits != 0
+                        ? reflect_if(cond, value >> 1, bits - 1, (result << 1) | (value & 1))
                         : result)
                     : value;
       }
@@ -211,7 +220,7 @@ namespace crcxx {
       // Adjust poly and init for computation, according to direction and base_type_width.
       static constexpr base_type adjusted_param(base_type value)
       {
-        return reflect_if(!msb_first, value << base_type_bits - Algorithm::width);
+        return reflect_if(!msb_first, value << width_diff);
       }
 
       // Adjust input for computation, according to direction and base_type_width.
@@ -241,7 +250,7 @@ namespace crcxx {
       static constexpr unsigned width_diff = base_type_bits - Algorithm::width;
 
       // msb_first defines the direction of computation. It is selected to eliminate input reflection.
-      static constexpr bool msb_first = Method == BIT_BY_BIT ? !Algorithm::refin : !Algorithm::refout;
+      static constexpr bool msb_first = !Algorithm::refin;
 
       // refin and refout are adjusted according to the direction of the computation.
       static constexpr bool refin  = !msb_first ^ Algorithm::refin;
@@ -255,8 +264,8 @@ namespace crcxx {
       // And mask used to test next bit, most significant bit if msb_first, least significant bit otherwise.
       static constexpr base_type next_bit_mask = msb_first ? base_type(1) << (base_type_bits - 1) : 1;
 
-      static constexpr unsigned table_bits = Method == USE_SMALL_TABLE ? 4 : 8;
-      static constexpr size_t table_mask = Method == USE_SMALL_TABLE ? 15 : 255;
+      static constexpr unsigned table_bits = Method == USE_SMALL_TABLE ?  4 :   8;
+      static constexpr uint8_t  table_mask = Method == USE_SMALL_TABLE ? 15 : 255;
 
     };
 
