@@ -109,6 +109,7 @@ def format_algos(algos):
         for param in numeric_params:
             algo[param] = ('0x{0:0' + str(math.ceil(algo['width'] / 4)) + 'x}').format(algo[param])
         result.append(algorithm_template.format(**algo))
+        used_identifiers.add(algo['identifier'])
         if 'aliases' in algo:
             for alias in sorted(algo['aliases']):
                 alias_identifier = cxx_identifier(algo, alias)
@@ -126,7 +127,7 @@ def format_algos(algos):
                     alias=alias,
                     alias_identifier=alias_identifier,
                     **algo))
-                used_identifiers.add(alias)
+                used_identifiers.add(alias_identifier)
     return file_template.format(algorithms="".join(result))
 
 

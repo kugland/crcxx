@@ -1,9 +1,9 @@
 // THIS FILE WAS AUTOMATICALLY GENERATED, DO NOT EDIT.
 
-#ifndef CRCXX_CRCXX_ALGORITHMS_HPP_
-#define CRCXX_CRCXX_ALGORITHMS_HPP_
+#ifndef CRCXX_CRC_CATALOGUE_HPP_
+#define CRCXX_CRC_CATALOGUE_HPP_
 
-#include "crcxx.hpp"
+#include "crc_algorithm.hpp"
 
 namespace crcxx {
 
@@ -978,11 +978,6 @@ namespace crcxx {
     /// CRC-B is an alias for CRC-16/IBM-SDLC
     ///
     using CRC16_CRC_B = CRC16_IBM_SDLC;
-
-    ///
-    /// X-25 is an alias for CRC-16/IBM-SDLC
-    ///
-    using CRC16_X_25 = CRC16_IBM_SDLC;
 
     ///
     /// CRC-16/ISO-IEC-14443-3-A

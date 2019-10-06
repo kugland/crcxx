@@ -18,7 +18,7 @@
 
 #include <stdint.h>
 #include <limits.h>
-
+#include <stdlib.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -194,7 +194,7 @@ namespace crcxx {
       static_assert(Width >= 1,  "Width must be >= 1");
       static_assert(Width <= 64, "Width must be <= 64");
 
-      // Recurse until Width equals 8, 16, 32 or 64.
+      // Recurse until one of the defined specializations is found.
       using type = typename select_base_type<Width + 1>::type;
     };
 
@@ -227,13 +227,9 @@ namespace crcxx {
       }
 
       // Returns the first n least significant bits of value in reverse order if cond == true, otherwise returns value.
-      static constexpr base_type reflect_if(bool cond, base_type value, uint_fast8_t bits = base_type_bits,
-                                            base_type result = 0)
+      static constexpr base_type reflect_if(bool cond, base_type value, int bits = base_type_bits, base_type acc = 0)
       {
-        return cond ? (bits != 0
-                        ? reflect_if(cond, value >> 1, bits - 1, (result << 1) | (value & 1))
-                        : result)
-                    : value;
+        return cond ? (bits != 0 ? reflect_if(cond, value >> 1, bits - 1, (acc << 1) | (value & 1)) : acc) : value;
       }
 
       // Adjust poly and init for computation, according to direction and base_type_width.
@@ -244,13 +240,13 @@ namespace crcxx {
 
       // Adjust input for computation, according to direction and base_type_width.
       template <typename InputType>
-      static constexpr base_type adjusted_input(InputType value, uint_fast8_t bits)
+      static constexpr base_type adjusted_input(InputType value, int bits)
       {
         return shift_forward(reflect_if(refin, value, bits), msb_first ? base_type_bits - bits : 0);
       }
 
        // Shift the checksum and xors poly when appropriate.
-      static constexpr base_type shift_checksum(base_type checksum, uint_fast8_t bits)
+      static constexpr base_type shift_checksum(base_type checksum, int bits)
       {
         return bits > 0 ? shift_checksum(shift_forward(checksum, 1) ^ (checksum & next_bit_mask ? poly : 0), bits - 1)
                         : checksum;
@@ -349,7 +345,7 @@ namespace crcxx {
     {
 
       using base_type = typename Algorithm::base_type;
-      constexpr static unsigned bits = 0;
+      constexpr static unsigned table_bits = 0;
 
       base_type operator[](base_type index) const
       {

@@ -1,6 +1,6 @@
-#include <stdlib.h>
-#include <iostream>
-#include <iomanip>
+//#include <stdlib.h>
+//#include <iostream>
+//#include <iomanip>
 
 #include "../src/crcxx.hpp"
 #include "../src/crcxx_algorithms.hpp"
@@ -47,18 +47,18 @@ using algo2 = crcxx::algorithms::CRC32_PKZIP;
 using check = check_crc_primitives<algo, crcxx::USE_SMALL_TABLE>;
 using check2 = check_crc_primitives<algo2, crcxx::USE_SMALL_TABLE>;*/
 
-using algo = crcxx::algorithms::CRC32_BZIP2;
+using algo = crcxx::algorithms::CRC16_X_25;
 
 uint32_t crc32(const char* ptr, size_t size)
 {
-  crcxx::crc<algo, crcxx::USE_TABLE> crc;
+  crcxx::crc<algo, crcxx::USE_SMALL_TABLE> crc;
 
   crc.update(size, ptr);
 
   return crc.finalize();
 }
 
-int main()
+/*int main()
 {
 
   std::cout
@@ -67,9 +67,10 @@ int main()
     << ' '
     << algo::check << '\n';
   //std::cout << std::hex << check2::compute_check() << ' ' << algo2::check << '\n';
-  /*using crc = crcxx::detail::crc_primitives<algo, crcxx::USE_TABLE>;
+  using crc = crcxx::detail::crc_primitives<algo, crcxx::USE_TABLE>;
   for (int i = 0; i <= 16; i++) {
     std::cout << "0x" << std::hex << i << ": 0x" << std::hex << std::setfill('0') << std::setw(4) << crc::compute_lookup_table_item(i) << ",\n";
   }
-  std::cout << "msb_first: " << crc::msb_first << '\n';*/
+  std::cout << "msb_first: " << crc::msb_first << '\n';
 }
+*/
