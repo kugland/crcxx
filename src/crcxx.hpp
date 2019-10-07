@@ -56,10 +56,32 @@
 #endif
 #endif
 
+#if CRCXX_USE_STL
 #if __cplusplus >= 201402
 #include <utility>
 #define CRCXX_USE_STL_INDEX_SEQUENCE 1
 #endif
+#endif
+
+
+#ifndef CRCXX_USE_ARDUINO_STRING
+#ifdef ARDUINO
+#define CRCXX_USE_ARDUINO_STRING 1
+#else
+#define CRCXX_USE_ARDUINO_STRING 0
+#endif
+#endif
+
+#if CRCXX_USE_ARDUINO_TYPES
+#include <Arduino.h>
+#endif
+
+
+#ifdef __AVR__
+#include <avr/pgmspace.h>
+#define CRCXX_LOOKUP_TABLE_ATTR PROGMEM
+#else
+#define CRCXX_LOOKUP_TABLE_ATTR
 #endif
 
 
@@ -186,15 +208,21 @@ namespace crcxx {
 
     void update(CRCXX_STD_NS::size_t size, const char* data)
     {
-      while (size--) {
+      while (size--)
         update(*data++);
-      }
     }
 
     base_type finalize() const
     {
       return primitives::finalize(checksum);
     }
+
+#if CRCXX_USE_ARDUINO_STRING
+    void update(const String& str)
+    {
+      update(str.length(), str.c_str());
+    }
+#endif
 
   };
 
@@ -344,11 +372,7 @@ namespace crcxx {
       template <CRCXX_STD_NS::size_t... Is>
       static constexpr internal_array make_lookup_table(index_sequence<Is...>)
       {
-        return {{
-          primitives::shift_checksum(
-            primitives::adjusted_input(Is, table_bits),
-            table_bits)...
-        }};
+        return {{ primitives::shift_checksum( primitives::adjusted_input(Is, table_bits), table_bits)... }};
       }
 
       static constexpr internal_array make_lookup_table()
@@ -358,8 +382,23 @@ namespace crcxx {
 
       base_type operator[](base_type index) const
       {
-        const static internal_array table = make_lookup_table();
-        return table.values[(index >> index_shift) & index_mask];
+        const static internal_array table CRCXX_LOOKUP_TABLE_ATTR = make_lookup_table();
+        base_type result;
+        index = (index >> index_shift) & index_mask;
+#if __AVR__
+        if (sizeof(base_type) == 1) {
+          result = pgm_read_byte(&(table.values[index]));
+        } else if (sizeof(base_type) == 2) {
+          result = pgm_read_word(&(table.values[index]));
+        } else if (sizeof(base_type) == 4) {
+          result = pgm_read_dword(&(table.values[index]));
+        } else if (sizeof(base_type) == 8) {
+          memcpy_P(&result, &(table.values[index]), 8);
+        }
+#else
+        result = table.values[index];
+#endif
+        return result;
       }
 
     };
