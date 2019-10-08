@@ -57,12 +57,13 @@
 #endif
 
 #if CRCXX_USE_STL
+
 #if __cplusplus >= 201402
 #include <utility>
 #define CRCXX_USE_STL_INDEX_SEQUENCE 1
 #endif
-#endif
 
+#endif
 
 #ifndef CRCXX_USE_ARDUINO_STRING
 #ifdef ARDUINO
@@ -186,23 +187,25 @@ namespace crcxx {
     using primitives   = detail::crc_primitives<Algorithm, Method>;
     using lookup_table = detail::crc_lookup_table<Algorithm, Method>;
 
+    static_assert((CHAR_BIT % lookup_table::table_bits) == 0, "CHAR_BIT not divisible by table_bits");
+
     base_type checksum = primitives::init;
 
   public:
 
     void update(char data)
     {
-      checksum ^= primitives::adjusted_input(data, 8);
+      checksum ^= primitives::adjusted_input(data, CHAR_BIT);
 
-      if (Method == BIT_BY_BIT) {
-        checksum = primitives::shift_checksum(checksum, 8);
-      } else {
-        const static lookup_table table;
-        int repeat = Method == USE_TABLE ? 1 : 2;
-
-        while (repeat--) {
+      if (Method != BIT_BY_BIT) {
+        int bits = CHAR_BIT;
+        while (bits >= lookup_table::table_bits) {
+          const static lookup_table table;
           checksum = primitives::shift_forward(checksum, lookup_table::table_bits) ^ table[checksum];
+          bits -= lookup_table::table_bits;
         }
+      } else {
+        checksum = primitives::shift_checksum(checksum, sizeof(data) * CHAR_BIT);
       }
     }
 
@@ -274,22 +277,23 @@ namespace crcxx {
       }
 
       // Returns the first n least significant bits of value in reverse order if cond == true, otherwise returns value.
-      static constexpr base_type reflect_if(bool cond, base_type value, int bits = base_type_bits, base_type acc = 0)
+      template <bool Cond>
+      static constexpr base_type reflect_if(base_type value, int bits = base_type_bits, base_type acc = 0)
       {
-        return cond ? (bits != 0 ? reflect_if(cond, value >> 1, bits - 1, (acc << 1) | (value & 1)) : acc) : value;
+        return Cond ? (bits != 0 ? reflect_if<Cond>(value >> 1, bits - 1, (acc << 1) | (value & 1)) : acc) : value;
       }
 
       // Adjust poly and init for computation, according to direction and base_type_width.
       static constexpr base_type adjusted_param(base_type value)
       {
-        return reflect_if(!msb_first, value << width_diff);
+        return reflect_if<!msb_first>(value << width_diff);
       }
 
       // Adjust input for computation, according to direction and base_type_width.
       template <typename InputType>
       static constexpr base_type adjusted_input(InputType value, int bits)
       {
-        return shift_forward(reflect_if(refin, value, bits), msb_first ? base_type_bits - bits : 0);
+        return shift_forward(reflect_if<refin>(value, bits), msb_first ? base_type_bits - bits : 0);
       }
 
        // Shift the checksum and xors poly when appropriate.
@@ -302,7 +306,7 @@ namespace crcxx {
       // Finalize the checksum
       static constexpr base_type finalize(base_type checksum)
       {
-        return Algorithm::xorout ^ reflect_if(refout, shift_forward(checksum, msb_first ^ refout ? -width_diff : 0));
+        return Algorithm::xorout ^ reflect_if<refout>(shift_forward(checksum, msb_first ^ refout ? -width_diff : 0));
       }
 
 
@@ -372,7 +376,7 @@ namespace crcxx {
       template <CRCXX_STD_NS::size_t... Is>
       static constexpr internal_array make_lookup_table(index_sequence<Is...>)
       {
-        return {{ primitives::shift_checksum( primitives::adjusted_input(Is, table_bits), table_bits)... }};
+        return {{ primitives::shift_checksum(primitives::adjusted_input(Is, table_bits), table_bits)... }};
       }
 
       static constexpr internal_array make_lookup_table()
@@ -386,13 +390,13 @@ namespace crcxx {
         base_type result;
         index = (index >> index_shift) & index_mask;
 #if __AVR__
-        if (sizeof(base_type) == 1) {
+        if (sizeof(result) == 1) {
           result = pgm_read_byte(&(table.values[index]));
-        } else if (sizeof(base_type) == 2) {
+        } else if (sizeof(result) == 2) {
           result = pgm_read_word(&(table.values[index]));
-        } else if (sizeof(base_type) == 4) {
+        } else if (sizeof(result) == 4) {
           result = pgm_read_dword(&(table.values[index]));
-        } else if (sizeof(base_type) == 8) {
+        } else if (sizeof(result) == 8) {
           memcpy_P(&result, &(table.values[index]), 8);
         }
 #else
@@ -408,12 +412,9 @@ namespace crcxx {
     {
 
       using base_type = typename Algorithm::base_type;
-      constexpr static unsigned table_bits = 0;
+      constexpr static unsigned table_bits = 1;
 
-      base_type operator[](base_type index) const
-      {
-        return 0;
-      }
+      base_type operator[](base_type index) const { return 0; }
 
     };
 

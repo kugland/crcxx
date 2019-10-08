@@ -47,11 +47,11 @@ using algo2 = crcxx::algorithms::CRC32_PKZIP;
 using check = check_crc_primitives<algo, crcxx::USE_SMALL_TABLE>;
 using check2 = check_crc_primitives<algo2, crcxx::USE_SMALL_TABLE>;*/
 
-using algo = crcxx::algorithms::CRC16_X_25;
+using algo = crcxx::algorithms::CRC32_PKZIP;
 
 uint32_t crc32(const char* ptr, size_t size)
 {
-  crcxx::crc<algo, crcxx::USE_SMALL_TABLE> crc;
+  crcxx::crc<algo, crcxx::BIT_BY_BIT> crc;
 
   crc.update(size, ptr);
 
