@@ -1,17 +1,8 @@
-// crcxx, a header-only library for computing CRCs written in modern C++
-//
-// Copyright (C) 2019 Andre Kugland
-//
-// This library is free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General
-// Public License as published by the Free Software Foundation; either version 2.1 of the License, or (at your option)
-// any later version.
-//
-// This library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
-// details.
-//
-// You should have received a copy of the GNU Lesser General Public License along with this library; if not, write to
-// the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+// Copyright (c) 2020 André Kugland
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 
 #ifndef CRCXX_CRCXX_HPP_
 #define CRCXX_CRCXX_HPP_
@@ -43,27 +34,13 @@
 #endif
 
 
-// When CRCXX_USE_STL is enabled, crcxx includes functions for dealing with STL containers std::string, std::array,
-// std::vector and (if std >= C++17) std::string_view, and also disables the std::index_sequence backport.
-//
-// For now, it is enabled by default except when compiling for AVR architecture, whose default library does not
-// include the standard template library.
-#ifndef CRCXX_USE_STL
-#if !defined(__AVR__)
-#define CRCXX_USE_STL 1
+#ifdef __AVR__
+#include <avr/pgmspace.h>
+#define CRCXX_LOOKUP_TABLE_ATTR PROGMEM
 #else
-#define CRCXX_USE_STL 0
-#endif
-#endif
-
-#if CRCXX_USE_STL
-
-#if __cplusplus >= 201402
-#include <utility>
-#define CRCXX_USE_STL_INDEX_SEQUENCE 1
+#define CRCXX_LOOKUP_TABLE_ATTR
 #endif
 
-#endif
 
 #ifndef CRCXX_USE_ARDUINO_STRING
 #ifdef ARDUINO
@@ -75,14 +52,6 @@
 
 #if CRCXX_USE_ARDUINO_TYPES
 #include <Arduino.h>
-#endif
-
-
-#ifdef __AVR__
-#include <avr/pgmspace.h>
-#define CRCXX_LOOKUP_TABLE_ATTR PROGMEM
-#else
-#define CRCXX_LOOKUP_TABLE_ATTR
 #endif
 
 
@@ -187,37 +156,41 @@ namespace crcxx {
     using primitives   = detail::crc_primitives<Algorithm, Method>;
     using lookup_table = detail::crc_lookup_table<Algorithm, Method>;
 
-    static_assert((CHAR_BIT % lookup_table::table_bits) == 0, "CHAR_BIT not divisible by table_bits");
-
     base_type checksum = primitives::init;
 
   public:
 
     void update(char data)
     {
-      checksum ^= primitives::adjusted_input(data, CHAR_BIT);
-
+      int bits = CHAR_BIT;
+      checksum ^= primitives::adjusted_input(data, bits);
       if (Method != BIT_BY_BIT) {
-        int bits = CHAR_BIT;
         while (bits >= lookup_table::table_bits) {
           const static lookup_table table;
           checksum = primitives::shift_forward(checksum, lookup_table::table_bits) ^ table[checksum];
           bits -= lookup_table::table_bits;
         }
-      } else {
-        checksum = primitives::shift_checksum(checksum, sizeof(data) * CHAR_BIT);
       }
+      checksum = primitives::shift_checksum(checksum, bits);
     }
 
-    void update(CRCXX_STD_NS::size_t size, const char* data)
+    template<class InputIt>
+    void update(InputIt first, InputIt last)
     {
-      while (size--)
-        update(*data++);
+      static_assert(sizeof(*first) == 1, "Type must be char");
+
+      for (; first != last; ++first)
+        update(*first);
     }
 
     base_type finalize() const
     {
       return primitives::finalize(checksum);
+    }
+
+    void reset()
+    {
+      checksum = primitives::init;
     }
 
 #if CRCXX_USE_ARDUINO_STRING
@@ -341,10 +314,6 @@ namespace crcxx {
 
     // The following STL templates are needed for the implementation of the lookup table.
     // If they are not present, a backport is provided.
-#if CRCXX_USE_STL_INDEX_SEQUENCE
-    using ::std::index_sequence;
-    using ::std::make_index_sequence;
-#else
     template <CRCXX_STD_NS::size_t... Is>
     struct index_sequence { static constexpr CRCXX_STD_NS::size_t size = sizeof...(Is); };
 
@@ -353,7 +322,6 @@ namespace crcxx {
 
     template <CRCXX_STD_NS::size_t... Is>
     struct make_index_sequence<0, Is...>: index_sequence<Is...> { };
-#endif
 
 
     template <typename Algorithm, crc_method Method>
@@ -387,22 +355,19 @@ namespace crcxx {
       base_type operator[](base_type index) const
       {
         const static internal_array table CRCXX_LOOKUP_TABLE_ATTR = make_lookup_table();
-        base_type result;
-        index = (index >> index_shift) & index_mask;
+        auto value_ptr = table.values + ((index >> index_shift) & index_mask);
 #if __AVR__
-        if (sizeof(result) == 1) {
-          result = pgm_read_byte(&(table.values[index]));
-        } else if (sizeof(result) == 2) {
-          result = pgm_read_word(&(table.values[index]));
-        } else if (sizeof(result) == 4) {
-          result = pgm_read_dword(&(table.values[index]));
-        } else if (sizeof(result) == 8) {
-          memcpy_P(&result, &(table.values[index]), 8);
+        switch (sizeof(base_type)) {
+          case 1: return pgm_read_byte(value_ptr);
+          case 2: return pgm_read_word(value_ptr);
+          case 4: return pgm_read_dword(value_ptr);
+          case 8: { base_type result;
+                    memcpy_P(&result, value_ptr, 8);
+                    return result; }
         }
 #else
-        result = table.values[index];
+        return *value_ptr;
 #endif
-        return result;
       }
 
     };
@@ -421,5 +386,7 @@ namespace crcxx {
   } // namespace detail
 
 } // namespace crcxx
+
+#include "crcxx_algorithms.hpp"
 
 #endif // CRCXX_CRCXX_HPP_
