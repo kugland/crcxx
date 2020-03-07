@@ -34,7 +34,7 @@ adjusted at compile time.
 * If <code>Refout == true</code>, use <code>msb_first = false</code>.
 
   - When using a small lookup table, first shift the least significant nibble in, then the most
-    significant nibble. 
+    significant nibble.
 
 * If <code>Refout == false</code>, use <code>msb_first = true</code>.
 
