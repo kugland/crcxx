@@ -1,5 +1,5 @@
 // Copyright (c) 2020 André Kugland
-// 
+//
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
@@ -92,7 +92,7 @@ namespace crcxx {
 
   } // namespace crcxx
 
-} //namespace detail
+} // namespace detail
 
 
 
@@ -151,7 +151,6 @@ namespace crcxx {
   template <typename Algorithm, crc_method Method>
   class crc
   {
-
     using base_type    = typename Algorithm::base_type;
     using primitives   = detail::crc_primitives<Algorithm, Method>;
     using lookup_table = detail::crc_lookup_table<Algorithm, Method>;
